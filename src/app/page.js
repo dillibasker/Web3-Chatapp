@@ -1,9 +1,149 @@
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import { create } from "ipfs-http-client";
-import contractABI from "../artifacts/contracts/MessageStorage.sol/DecentralizedChat.json";
+"use client";
 
-const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS";
+import { useState, useEffect } from "react";
+import { BrowserProvider } from "ethers";
+import { create } from "ipfs-http-client";
+ 
+const contractAddress = "0xe406f7A0a5A7821712B0173fe9E220d95ba6e7BF";
+const contractABI=[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "MessageSent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_ipfsHash",
+				"type": "string"
+			}
+		],
+		"name": "sendMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMessages",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "ipfsHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct DecentralizedChat.Message[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "messages",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "ipfsHash",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userMessageCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
 const ipfs = create({ host: "ipfs.infura.io", port: 5001, protocol: "https" });
 
 export default function Home() {
@@ -17,10 +157,10 @@ export default function Home() {
     useEffect(() => {
         const init = async () => {
             if (window.ethereum) {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const provider = new ethers.providers.BrowserProvider(window.ethereum);
                 setProvider(provider);
                 const signer = provider.getSigner();
-                const contract = new ethers.Contract(contractAddress, contractABI.abi, signer);
+                const contract = new ethers.Contract(contractAddress, contractABI, signer);
                 setContract(contract);
                 const accounts = await provider.send("eth_requestAccounts", []);
                 setAccount(accounts[0]);
