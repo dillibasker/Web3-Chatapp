@@ -6,9 +6,23 @@ import dynamic from "next/dynamic";
 
 // Dynamic import to prevent SSR issues with IPFS
 const createIpfsClient = async () => {
-  const { create } = await import("ipfs-http-client");
-  return create({ host: "ipfs.infura.io", port: 5001, protocol: "https" });
+    const { create } = await import("ipfs-http-client");
+
+    // ✅ Replace with your Infura Project ID & Secret
+    const projectId = "YOUR_INFURA_PROJECT_ID";
+    const projectSecret = "YOUR_INFURA_PROJECT_SECRET";
+    const auth = "Basic " + btoa(projectId + ":" + projectSecret);
+
+    return create({
+        host: "ipfs.infura.io",
+        port: 5001,
+        protocol: "https",
+        headers: {
+            authorization: auth,
+        },
+    });
 };
+
 
 const contractAddress = "0xe406f7A0a5A7821712B0173fe9E220d95ba6e7BF";
 const contractABI = [
@@ -66,36 +80,45 @@ export default function Home() {
 
   useEffect(() => {
     const init = async () => {
-		if (window.ethereum) {
-			try {
-				const provider = new ethers.BrowserProvider(window.ethereum);
-				setProvider(provider);
-				
-				// Check if MetaMask is already connected
-				const accounts = await provider.listAccounts();
-				if (accounts.length === 0) {
-					const requestedAccounts = await provider.send("eth_requestAccounts", []);
-					setAccount(requestedAccounts[0]);
-				} else {
-					setAccount(accounts[0]);
-				}
-	
-				const signer = await provider.getSigner();
-				const address=await signer.getAddress()
-				const contract = new ethers.Contract(contractAddress, contractABI, signer);
-				setAddress(address)
-				setContract(contract);
-				loadMessages(contract);
-			} catch (error) {
-				console.error("Error initializing provider:", error);
-			}
-		} else {
-			console.error("Ethereum wallet not found");
-		}
-	};
-	
+        if (window.ethereum) {
+            try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                setProvider(provider);
+                
+                const accounts = await provider.listAccounts();
+                if (accounts.length === 0) {
+                    const requestedAccounts = await provider.send("eth_requestAccounts", []);
+                    setAccount(requestedAccounts[0]);
+                } else {
+                    setAccount(accounts[0]);
+                }
+
+                const signer = await provider.getSigner();
+                const address = await signer.getAddress();
+                const contract = new ethers.Contract(contractAddress, contractABI, signer);
+                
+                setAddress(address);
+                setContract(contract);
+                loadMessages(contract);
+            } catch (error) {
+                console.error("Error initializing provider:", error);
+            }
+        } else {
+            console.error("Ethereum wallet not found");
+        }
+
+        // ✅ Initialize IPFS
+        try {
+            const ipfsClient = await createIpfsClient();
+            setIpfs(ipfsClient);
+        } catch (error) {
+            console.error("Error initializing IPFS:", error);
+        }
+    };
+
     init();
-  }, []);
+}, []);
+
 
   const loadMessages = async (contract) => {
     const msgs = await contract.getMessages();
@@ -108,12 +131,18 @@ export default function Home() {
         return;
     }
 
+    if (!ipfs) {
+        console.error("IPFS client not initialized");
+        return;
+    }
+
     if (!message || !receiver) {
         console.error("Message and receiver are required");
         return;
     }
 
     try {
+        console.log("Storing message on IPFS...");
         const added = await ipfs.add(message);
         console.log("IPFS Hash:", added.path);
 
@@ -129,6 +158,7 @@ export default function Home() {
         console.error("Error sending message:", error);
     }
 };
+
 
 
   return (
