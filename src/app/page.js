@@ -101,10 +101,14 @@ export default function Home() {
 
   const sendMessage = async () => {
     if (!message || !receiver || !ipfs) return;
+	console.log("Before")
     const added = await ipfs.add(message);
+	console.log("S added msg")
     const tx = await contract.sendMessage(receiver, added.path);
     await tx.wait();
+	console.log("finished")
     loadMessages(contract);
+	console.log("Fetched")
     setMessage("");
   };
 
