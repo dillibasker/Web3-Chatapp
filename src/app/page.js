@@ -62,6 +62,7 @@ export default function Home() {
   const [receiver, setReceiver] = useState("");
   const [message, setMessage] = useState("");
   const [ipfs, setIpfs] = useState(null);
+  const [address,setAddress]=useState("")
 
   useEffect(() => {
     const init = async () => {
@@ -80,7 +81,9 @@ export default function Home() {
 				}
 	
 				const signer = await provider.getSigner();
+				const address=await signer.getAddress()
 				const contract = new ethers.Contract(contractAddress, contractABI, signer);
+				setAddress(address)
 				setContract(contract);
 				loadMessages(contract);
 			} catch (error) {
@@ -132,7 +135,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-6">
       <h1 className="text-3xl font-bold text-indigo-400 mb-4">Decentralized Chat</h1>
       <p className="mb-4 bg-gray-800 p-2 rounded-lg">
-        {account ? `Connected: ${account}` : "Not Connected"}
+        {account ? `Connected: ${address}` : "Not Connected"}
       </p>
 
       <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
