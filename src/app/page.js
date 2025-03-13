@@ -185,21 +185,41 @@ export default function Home() {
     };
 
     return (
-        <div>
-            <h1>Decentralized Chat</h1>
-            <p>Connected: {account}</p>
-            <input type="text" placeholder="Receiver Address" value={receiver} onChange={(e) => setReceiver(e.target.value)} />
-            <textarea placeholder="Enter message" value={message} onChange={(e) => setMessage(e.target.value)} />
-            <button onClick={sendMessage}>Send</button>
-            <h2>Messages</h2>
-            <ul>
-                {messages.map((msg, index) => (
-                    <li key={index}>
-                        <p>From: {msg.sender}</p>
-                        <p>To: {msg.receiver}</p>
-                        <p>Message Hash: {msg.ipfsHash}</p>
+        <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-6">
+            <h1 className="text-3xl font-bold text-indigo-400 mb-4">Decentralized Chat</h1>
+            <p className="mb-4 bg-gray-800 p-2 rounded-lg">{account ? `Connected: ${account}` : "Not Connected"}</p>
+            
+            <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
+                <input 
+                    type="text" 
+                    placeholder="Receiver Address" 
+                    value={receiver} 
+                    onChange={(e) => setReceiver(e.target.value)} 
+                    className="w-full p-2 mb-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+                <textarea 
+                    placeholder="Enter message" 
+                    value={message} 
+                    onChange={(e) => setMessage(e.target.value)} 
+                    className="w-full p-2 mb-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+                <button 
+                    onClick={sendMessage} 
+                    className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition-all"
+                >
+                    Send
+                </button>
+            </div>
+
+            <h2 className="text-2xl font-semibold mt-6">Messages</h2>
+            <ul className="w-full max-w-md bg-gray-800 p-4 rounded-lg mt-4 shadow-lg space-y-3">
+                {messages.length > 0 ? messages.map((msg, index) => (
+                    <li key={index} className="p-4 bg-gray-700 rounded-lg border border-gray-600">
+                        <p><span className="text-indigo-300">From:</span> {msg.sender}</p>
+                        <p><span className="text-indigo-300">To:</span> {msg.receiver}</p>
+                        <p><span className="text-indigo-300">Message Hash:</span> {msg.ipfsHash}</p>
                     </li>
-                ))}
+                )) : <p className="text-gray-400">No messages yet.</p>}
             </ul>
         </div>
     );
