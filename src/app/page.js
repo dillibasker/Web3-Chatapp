@@ -100,17 +100,33 @@ export default function Home() {
   };
 
   const sendMessage = async () => {
-    if (!message || !receiver || !ipfs) return;
-	console.log("Before")
-    const added = await ipfs.add(message);
-	console.log("S added msg")
-    const tx = await contract.sendMessage(receiver, added.path);
-    await tx.wait();
-	console.log("finished")
-    loadMessages(contract);
-	console.log("Fetched")
-    setMessage("");
-  };
+    if (!contract) {
+        console.error("Contract not initialized");
+        return;
+    }
+
+    if (!message || !receiver) {
+        console.error("Message and receiver are required");
+        return;
+    }
+
+    try {
+        const added = await ipfs.add(message);
+        console.log("IPFS Hash:", added.path);
+
+        const tx = await contract.sendMessage(receiver, added.path);
+        console.log("Transaction sent:", tx);
+
+        await tx.wait();
+        console.log("Transaction confirmed");
+
+        loadMessages(contract);
+        setMessage("");
+    } catch (error) {
+        console.error("Error sending message:", error);
+    }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-6">
